@@ -6,7 +6,6 @@ const {
     Browsers,
     fetchLatestBaileysVersion 
 } = require('@whiskeysockets/baileys');
-const qrcode = require('qrcode-terminal');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 // ---------------------------------------------------------------------
@@ -29,8 +28,6 @@ async function getAIResponse(prompt) {
 
 async function connectToWhatsApp() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info');
-    
-    // WhatsApp இன் சமீபத்திய Baileys பதிப்பைப் பெறுதல் (428 பிழையைத் தவிர்க்கும்)
     const { version } = await fetchLatestBaileysVersion();
 
     const sock = makeWASocket({
@@ -43,26 +40,24 @@ async function connectToWhatsApp() {
 
     sock.ev.on('creds.update', saveCreds);
 
-    // Pairing Code கோருதல்
-    if (!sock.authState.creds.registered) {
-        setTimeout(async () => {
-            try {
-                const code = await sock.requestPairingCode(PHONE_NUMBER);
-                console.log(`\n==================================================`);
-                console.log(`உங்கள் WhatsApp இணைப்பு கோட் (Pairing Code): ${code}`);
-                console.log(`==================================================\n`);
-            } catch (err) {
-                console.error("Pairing Code பெறுவதில் பிழை:", err);
-            }
-        }, 5000);
-    }
+    let isCodeRequested = false;
 
-    sock.ev.on('connection.update', (update) => {
+    sock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect, qr } = update;
 
-        if (qr) {
-            qrcode.generate(qr, { small: true });
-            console.log('WhatsApp பெறப்பட்ட QR கோடை ஸ்கேன் செய்யவும்.');
+        // QR தோன்றும் கட்டத்தில் Pairing Code-ஐக் கோருதல்
+        if (qr && !sock.authState.creds.registered && !isCodeRequested) {
+            isCodeRequested = true;
+            setTimeout(async () => {
+                try {
+                    const code = await sock.requestPairingCode(PHONE_NUMBER);
+                    console.log(`\n==================================================`);
+                    console.log(`உங்கள் WhatsApp இணைப்பு கோட் (Pairing Code): ${code}`);
+                    console.log(`==================================================\n`);
+                } catch (err) {
+                    console.error("Pairing Code பெறுவதில் பிழை:", err);
+                }
+            }, 3000);
         }
 
         if (connection === 'close') {

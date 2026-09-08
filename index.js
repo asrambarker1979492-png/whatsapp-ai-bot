@@ -1,5 +1,11 @@
  require('dotenv').config();
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers } = require('@whiskeysockets/baileys');
+const { 
+    default: makeWASocket, 
+    useMultiFileAuthState, 
+    DisconnectReason, 
+    Browsers,
+    fetchLatestBaileysVersion 
+} = require('@whiskeysockets/baileys');
 const qrcode = require('qrcode-terminal');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
@@ -23,11 +29,16 @@ async function getAIResponse(prompt) {
 
 async function connectToWhatsApp() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info');
+    
+    // WhatsApp இன் சமீபத்திய Baileys பதிப்பைப் பெறுதல் (428 பிழையைத் தவிர்க்கும்)
+    const { version } = await fetchLatestBaileysVersion();
 
     const sock = makeWASocket({
+        version,
         auth: state,
         printQRInTerminal: false,
-        browser: Browsers.ubuntu("Chrome") // Precondition Required பிழையை சரிசெய்யும்
+        browser: Browsers.ubuntu("Chrome"),
+        syncFullHistory: false
     });
 
     sock.ev.on('creds.update', saveCreds);

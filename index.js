@@ -6,7 +6,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 // ---------------------------------------------------------------------
 // உங்கள் வாட்ஸ்அப் எண்ணை இங்கே வழங்கவும் (Country Code உடன், Ex: 947XXXXXXXX)
 // ---------------------------------------------------------------------
-const PHONE_NUMBER = "947XXXXXXXX"; 
+const PHONE_NUMBER = "94751294924"; 
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 

@@ -1,10 +1,10 @@
  require('dotenv').config();
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers } = require('@whiskeysockets/baileys');
 const qrcode = require('qrcode-terminal');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 // ---------------------------------------------------------------------
-// உங்கள் வாட்ஸ்அப் எண்ணை இங்கே வழங்கவும் (Country Code உடன், Ex: 947XXXXXXXX)
+// உங்கள் வாட்ஸ்அப் எண் (Country Code உடன்)
 // ---------------------------------------------------------------------
 const PHONE_NUMBER = "94751294924"; 
 
@@ -26,7 +26,8 @@ async function connectToWhatsApp() {
 
     const sock = makeWASocket({
         auth: state,
-        printQRInTerminal: false
+        printQRInTerminal: false,
+        browser: Browsers.ubuntu("Chrome") // Precondition Required பிழையை சரிசெய்யும்
     });
 
     sock.ev.on('creds.update', saveCreds);

@@ -3,6 +3,11 @@ const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = requi
 const qrcode = require('qrcode-terminal');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
+// ---------------------------------------------------------------------
+// உங்கள் வாட்ஸ்அப் எண்ணை இங்கே வழங்கவும் (Country Code உடன், Ex: 947XXXXXXXX)
+// ---------------------------------------------------------------------
+const PHONE_NUMBER = "947XXXXXXXX"; 
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 async function getAIResponse(prompt) {
@@ -25,6 +30,20 @@ async function connectToWhatsApp() {
     });
 
     sock.ev.on('creds.update', saveCreds);
+
+    // Pairing Code கோருதல்
+    if (!sock.authState.creds.registered) {
+        setTimeout(async () => {
+            try {
+                const code = await sock.requestPairingCode(PHONE_NUMBER);
+                console.log(`\n==================================================`);
+                console.log(`உங்கள் WhatsApp இணைப்பு கோட் (Pairing Code): ${code}`);
+                console.log(`==================================================\n`);
+            } catch (err) {
+                console.error("Pairing Code பெறுவதில் பிழை:", err);
+            }
+        }, 5000);
+    }
 
     sock.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect, qr } = update;
